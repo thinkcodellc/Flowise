@@ -5,7 +5,9 @@ const apiClient = axios.create({
     baseURL: `${baseURL}/api/v1`,
     headers: {
         'Content-type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT',
+        'Access-Control-Allow-Headers': 'Content-Type'
     }
 })
 
