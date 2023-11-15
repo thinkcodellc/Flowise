@@ -1,5 +1,6 @@
 {
     "description": "Flowise Docs Github QnA using conversational retrieval QA chain",
+    "badge": "POPULAR",
     "nodes": [
         {
             "width": 300,
@@ -265,7 +266,7 @@
                 "id": "github_0",
                 "label": "Github",
                 "name": "github",
-                "version": 1,
+                "version": 2,
                 "type": "Document",
                 "baseClasses": ["Document"],
                 "category": "Document Loaders",
@@ -300,6 +301,35 @@
                         "type": "boolean",
                         "optional": true,
                         "id": "github_0-input-recursive-boolean"
+                    },
+                    {
+                        "label": "Max Concurrency",
+                        "name": "maxConcurrency",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "github_0-input-maxConcurrency-number"
+                    },
+                    {
+                        "label": "Ignore Paths",
+                        "name": "ignorePath",
+                        "type": "string",
+                        "description": "An array of paths to be ignored",
+                        "placeholder": "[\"*.md\"]",
+                        "rows": 4,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "github_0-input-ignorePath-string"
+                    },
+                    {
+                        "label": "Max Retries",
+                        "name": "maxRetries",
+                        "description": "The maximum number of retries that can be made for a single call, with an exponential backoff between each attempt. Defaults to 2.",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "github_0-input-maxRetries-number"
                     },
                     {
                         "label": "Metadata",
@@ -357,7 +387,7 @@
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
                 "name": "chatOpenAI",
-                "version": 1,
+                "version": 2,
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
                 "category": "Chat Models",
@@ -469,7 +499,15 @@
                         "id": "chatOpenAI_0-input-basepath-string"
                     }
                 ],
-                "inputAnchors": [],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-cache-BaseCache"
+                    }
+                ],
                 "inputs": {
                     "modelName": "gpt-3.5-turbo",
                     "temperature": 0.9,

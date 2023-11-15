@@ -1,6 +1,8 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { OpenAI, OpenAIInput } from 'langchain/llms/openai'
+import { BaseLLMParams } from 'langchain/llms/base'
+import { BaseCache } from 'langchain/schema'
 
 class OpenAI_LLMs implements INode {
     label: string
@@ -17,7 +19,7 @@ class OpenAI_LLMs implements INode {
     constructor() {
         this.label = 'OpenAI'
         this.name = 'openAI'
-        this.version = 1.0
+        this.version = 3.0
         this.type = 'OpenAI'
         this.icon = 'openai.png'
         this.category = 'LLMs'
@@ -31,28 +33,30 @@ class OpenAI_LLMs implements INode {
         }
         this.inputs = [
             {
+                label: 'Cache',
+                name: 'cache',
+                type: 'BaseCache',
+                optional: true
+            },
+            {
                 label: 'Model Name',
                 name: 'modelName',
                 type: 'options',
                 options: [
                     {
-                        label: 'text-davinci-003',
-                        name: 'text-davinci-003'
+                        label: 'gpt-3.5-turbo-instruct',
+                        name: 'gpt-3.5-turbo-instruct'
                     },
                     {
-                        label: 'text-davinci-002',
-                        name: 'text-davinci-002'
+                        label: 'babbage-002',
+                        name: 'babbage-002'
                     },
                     {
-                        label: 'text-curie-001',
-                        name: 'text-curie-001'
-                    },
-                    {
-                        label: 'text-babbage-001',
-                        name: 'text-babbage-001'
+                        label: 'davinci-002',
+                        name: 'davinci-002'
                     }
                 ],
-                default: 'text-davinci-003',
+                default: 'gpt-3.5-turbo-instruct',
                 optional: true
             },
             {
@@ -125,6 +129,13 @@ class OpenAI_LLMs implements INode {
                 type: 'string',
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'BaseOptions',
+                name: 'baseOptions',
+                type: 'json',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -141,11 +152,14 @@ class OpenAI_LLMs implements INode {
         const bestOf = nodeData.inputs?.bestOf as string
         const streaming = nodeData.inputs?.streaming as boolean
         const basePath = nodeData.inputs?.basepath as string
+        const baseOptions = nodeData.inputs?.baseOptions
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
 
-        const obj: Partial<OpenAIInput> & { openAIApiKey?: string } = {
+        const cache = nodeData.inputs?.cache as BaseCache
+
+        const obj: Partial<OpenAIInput> & BaseLLMParams & { openAIApiKey?: string } = {
             temperature: parseFloat(temperature),
             modelName,
             openAIApiKey,
@@ -160,8 +174,20 @@ class OpenAI_LLMs implements INode {
         if (batchSize) obj.batchSize = parseInt(batchSize, 10)
         if (bestOf) obj.bestOf = parseInt(bestOf, 10)
 
+        if (cache) obj.cache = cache
+
+        let parsedBaseOptions: any | undefined = undefined
+        if (baseOptions) {
+            try {
+                parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
+            } catch (exception) {
+                throw new Error("Invalid JSON in the OpenAI's BaseOptions: " + exception)
+            }
+        }
+
         const model = new OpenAI(obj, {
-            basePath
+            basePath,
+            baseOptions: parsedBaseOptions
         })
         return model
     }
